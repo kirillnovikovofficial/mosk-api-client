@@ -2,3 +2,15 @@
 require_once 'vendor/autoload.php';
 
 $user = new \ApiClient\model\User('test', '12345');
+$user->setUsername('ivanov');
+$data = $user->getData();
+$updateParams = [
+    'active' => '1',
+	'blocked' => true,
+	'name' => 'Petr Petrovich',
+	'permissions' => [
+	    'id' => 1,
+        'permission' => 'comment',
+ 	],
+];
+$user->updateData(23, $updateParams);

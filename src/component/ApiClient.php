@@ -2,6 +2,8 @@
 
 namespace ApiClient\component;
 
+use ApiClient\exception\NotAuthException;
+use ApiClient\exception\NotFoundException;
 use ApiClient\exception\TransportException;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -12,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class ApiClient
 {
-    private const API_URL = 'https://zmzqn4e0ml.api.quickmocker.com/';
+    private const API_URL = 'http://localhost';
 
     private const CONNECT_TIMEOUT = 4.0;
     private const REQUEST_TIMEOUT = 16.0;
@@ -60,6 +62,7 @@ class ApiClient
     {
         $retries = 0;
         $lastException = null;
+        $notRetry = [404];
         do {
             try {
                 return $this->call($method, $endpoint, $params);
@@ -67,6 +70,9 @@ class ApiClient
                 $lastException = $e;
             } catch (\Throwable $e) {
                 $lastException = $e;
+                if (in_array($e->getCode(), $notRetry)) {
+                    throw $lastException;
+                }
             }
             sleep(self::RETRY_INTERVAL);
         } while (++$retries < self::MAX_RETRIES);
@@ -103,10 +109,10 @@ class ApiClient
     private function processResponse(ResponseInterface $response): array
     {
         $body = (string) $response->getBody();
-        $arrayResponse = json_decode($body, false);
+        $arrayResponse = json_decode($body, true);
         $errorCode = json_last_error();
         if ($errorCode !== JSON_ERROR_NONE) {
-            throw new TransportException(sprintf('Invalid JSON: %d. Response: {%s}', $errorCode, $body));
+            throw new TransportException(sprintf('Error: invalid JSON (%d). Response: {%s}', $errorCode, $body));
         }
 
         $statusCode = $response->getStatusCode();
@@ -114,8 +120,10 @@ class ApiClient
             case 200:
             case 201:
                 return $arrayResponse;
+            case 404:
+                throw new NotFoundException(sprintf('Error: %s', $response->getBody()), $statusCode);
             default:
-                throw new ApiException('Error: ' . $response->getBody(), $statusCode);
+                throw new ApiException(sprintf('Error: %s', $response->getBody()), $statusCode);
         }
     }
 
@@ -125,7 +133,30 @@ class ApiClient
             'login' => $login,
             'pass' => $password,
         ]);
+        $this->token = $response['token'] ?? null;
+        if ($this->token === null) {
+            throw new ApiException(sprintf('Error: invalid response. Response: {%s}', json_encode($response)));
+        }
         return $response;
+    }
 
+    public function getData(string $username)
+    {
+        if ($this->token === null) {
+            throw new NotAuthException();
+        }
+        return $this->callWithRetries('GET', "get-user/$username", [
+            'token' => $this->token,
+        ]);
+    }
+
+    public function updateData(int $uid, array $params): void
+    {
+        if ($this->token === null) {
+            throw new NotAuthException();
+        }
+        $this->callWithRetries('POST', "user/$uid/update?token={$this->token}", [
+            $params
+        ]);
     }
 }

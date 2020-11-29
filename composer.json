@@ -2,7 +2,8 @@
     "name": "test/mosk-api-client",
     "require": {
         "guzzlehttp/guzzle": "6.4",
-        "php": ">=7.1"
+        "php": ">=7.1",
+        "react/http": "^1.1"
     },
     "authors": [
         {
