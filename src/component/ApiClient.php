@@ -58,6 +58,9 @@ class ApiClient
         return $this->processResponse($response);
     }
 
+    /**
+     * @throws \Throwable
+     */
     private function callWithRetries(string $method, string $endpoint, array $params = [])
     {
         $retries = 0;
@@ -127,6 +130,9 @@ class ApiClient
         }
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function auth(string $login, string $password)
     {
         $response = $this->callWithRetries('GET', 'auth', [
@@ -140,6 +146,9 @@ class ApiClient
         return $response;
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function getData(string $username)
     {
         if ($this->token === null) {
@@ -150,6 +159,9 @@ class ApiClient
         ]);
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function updateData(int $uid, array $params): void
     {
         if ($this->token === null) {

@@ -12,6 +12,10 @@ class User
     /** @var string|null */
     private $username;
 
+    /**
+     * User constructor.
+     * @throws \Throwable
+     */
     public function __construct(string $login, string $password)
     {
         $this->getApiClient()->auth($login, $password);
@@ -26,6 +30,9 @@ class User
         return $this->apiClient;
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function getData(): array
     {
         if ($this->username === null) {
@@ -34,11 +41,11 @@ class User
         return $this->getApiClient()->getData($this->username);
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function updateData(int $uid, array $params): void
     {
-        if ($this->username === null) {
-            throw new \InvalidArgumentException('Params username cannot be empty.');
-        }
         $this->getApiClient()->updateData($uid, $params);
     }
 
