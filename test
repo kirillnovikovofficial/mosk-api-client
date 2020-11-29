@@ -1,2 +1,4 @@
 <?php
 require_once 'vendor/autoload.php';
+
+$user = new \ApiClient\model\User('test', '12345');

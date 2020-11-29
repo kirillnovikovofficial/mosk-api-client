@@ -2,7 +2,7 @@
 
 namespace ApiClient\exception;
 
-class ApiException
+class ApiException extends \RuntimeException
 {
 
 }
