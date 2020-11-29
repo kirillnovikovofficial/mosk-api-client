@@ -46,7 +46,7 @@ class ApiClient
         ]);
     }
 
-    private function call(string $method, string $endpoint, array $params)
+    private function call(string $method, string $endpoint, array $params): array
     {
         $request = $this->buildRequest($method, $endpoint, $params);
         try {
@@ -61,7 +61,7 @@ class ApiClient
     /**
      * @throws \Throwable
      */
-    private function callWithRetries(string $method, string $endpoint, array $params = [])
+    private function callWithRetries(string $method, string $endpoint, array $params = []): array
     {
         $retries = 0;
         $lastException = null;
@@ -133,7 +133,7 @@ class ApiClient
     /**
      * @throws \Throwable
      */
-    public function auth(string $login, string $password)
+    public function auth(string $login, string $password): void
     {
         $response = $this->callWithRetries('GET', 'auth', [
             'login' => $login,
@@ -143,13 +143,12 @@ class ApiClient
         if ($this->token === null) {
             throw new ApiException(sprintf('Error: invalid response. Response: {%s}', json_encode($response)));
         }
-        return $response;
     }
 
     /**
      * @throws \Throwable
      */
-    public function getData(string $username)
+    public function getData(string $username): array
     {
         if ($this->token === null) {
             throw new NotAuthException();
